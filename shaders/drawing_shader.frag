@@ -16,18 +16,17 @@ void main()
 {
    float y = 0.0; //Height color
    float dist = distance(mousePosition, texCoords);
-   float xDist = distance(mousePosition.x, texCoords.x);
-   float yDist = distance(mousePosition.y, texCoords.y);
-   float dsqrd = dist*dist;
 
    if (mouseBtnDown == 1)
    {
-      if (dist < brushSize)
-         y = brushPower * (1.0 - dsqrd) * delta;
+      //Hard brush
+      y = step(dist, brushSize) * brushPower * delta;
+
+      //Smooth brush
+      //y = smoothstep(brushSize, 0.05*brushSize, dist) * brushPower * delta;
    }
 
    //Store the mask color in the blue channel
-   //float maskColor = step(0.01, texture(mask_texture, texCoords).r); //In case of filtering, make only 0 or 1
-   float maskColor = texture(mask_texture, texCoords).r; //In case of filtering, make only 0 or 1
+   float maskColor = texture(mask_texture, texCoords).r;
    fragColor = vec4(0.0, y, maskColor, 1.0f);
 }
