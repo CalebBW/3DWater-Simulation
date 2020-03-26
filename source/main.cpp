@@ -12,7 +12,6 @@ bool windowOpen = true;
 //Shaders
 ShaderProgram drawingShader;
 ShaderProgram imageShader;
-ShaderProgram sumImageShader;
 ShaderProgram waterPhysicsShader;
 ShaderProgram waterSurfaceShader;
 ShaderProgram shapeShader;
@@ -119,14 +118,7 @@ void initShaders()
     drawingShader.programID = LoadShaders(shader);
     //Samplers
     drawingShader.setUniform("mask_texture", 0);
-
-    //Shader for adding textures together
-    shader.vShaderFile = "shaders/sum_image.vert";
-    shader.fShaderFile = "shaders/sum_image.frag";
-    sumImageShader.programID = LoadShaders(shader);
-    //Samplers
-    sumImageShader.setUniform("imageA_texture", 0);
-    sumImageShader.setUniform("imageB_texture", 1);
+    drawingShader.setUniform("height_texture", 1);
 
     //Shader for displaying a texture image
     shader.vShaderFile = "shaders/image_shader.vert";
@@ -658,35 +650,23 @@ int main()
         //make sure the second attachment is reset back to none (GL_NONE).
         GLenum attachments[] = { GL_COLOR_ATTACHMENT0, GL_NONE };
         glBindFramebuffer(GL_FRAMEBUFFER, waterFBO);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorTexture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, heightTextures[1], 0);
         glDrawBuffers(2, attachments);
 
         //Draw our mouse painting. The contents of maskTexture are stored in colorTexture's blue
-        //channel, and later copied into a height texture which cuts down on additional sampling
+        //channel, and are stored in a height texture which cuts down on additional sampling
         //in the physics shader.
         glClear(GL_COLOR_BUFFER_BIT);
         drawingShader.setUniform("brushSize", infoValue[1]);
         drawingShader.setUniform("brushPower", infoValue[2]);
         drawingShader.enable();
         enableTexture2D(0, maskTexture);
+        enableTexture2D(1, heightTextures[0]); //Sample the previous height texture
         glBindVertexArray(fullscreenVAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
         //glBindVertexArray(0); //Leave fullscreenVAO bound until after the physics loop is done with it
         disableTexture(0);
         fetchGLErrors("Error after drawing stage:");
-
-        //Add our drawing changes into the desired height texture
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, heightTextures[1], 0);
-        glClear(GL_COLOR_BUFFER_BIT);
-        sumImageShader.enable();
-        enableTexture2D(0, colorTexture);
-        enableTexture2D(1, heightTextures[0]);
-        //glBindVertexArray(fullscreenVAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
-        //glBindVertexArray(0);
-        disableTexture(1);
-        disableTexture(0);
-        fetchGLErrors("Problem copying data into height texture:");
 
         //--------------------------------------------------------
         //Water physics loop

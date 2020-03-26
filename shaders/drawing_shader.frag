@@ -4,6 +4,7 @@ out vec4 fragColor;
 
 in vec2 texCoords;
 uniform sampler2D mask_texture;
+uniform sampler2D height_texture;
 
 uniform int mouseBtnDown;
 uniform vec2 mousePosition;
@@ -16,6 +17,7 @@ void main()
 {
    float y = 0.0; //Height color
    float dist = distance(mousePosition, texCoords);
+   vec2 prevData = texture(height_texture, texCoords).rg;
 
    if (mouseBtnDown == 1)
    {
@@ -28,5 +30,5 @@ void main()
 
    //Store the mask color in the blue channel
    float maskColor = texture(mask_texture, texCoords).r;
-   fragColor = vec4(0.0, y, maskColor, 1.0f);
+   fragColor = vec4(prevData.x, prevData.y + y, maskColor, 1.0f);
 }
