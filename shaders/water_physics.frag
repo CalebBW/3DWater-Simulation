@@ -18,7 +18,7 @@ float stepsize = 1.0 / 128.0;
 float g = 0.1;
 
 //Waveform decay constant
-float decay = 0.997;
+float decay = 0.998;
 
 //The variables used are based on this naming convention.
 //        [ C ]
