@@ -2,9 +2,10 @@
 drawing_shader.frag adds value to the bound texture based on user inputs. Height is stored in the green (y) channel of the texture.
 The mask texture is also sampled here and placed in the blue (z) channel.
 
-sum_image.frag takes the results of the color texture from drawing_shader.frag and adds it a height texture. It preserves velocity (red),
-and height (green) from the input height texture.
-
 water_physics.frag is where all the work is done. A height texture is passed into it which provides it with velocity (red),
 height (green), and a masked area (blue). Results are sent into two different textures via multiple render targets; a new height
 texture for the next pass, and a surface data texture which stores the current surface normals and velocity.
+
+water_surface.vert takes the water plane geometry and alters vertex y position based on the input height texture.
+
+water_surface.frag is responsible for all of the artistic visuals applied to the water surface.
